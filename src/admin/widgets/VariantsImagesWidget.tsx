@@ -1,0 +1,206 @@
+import { useEffect, useState } from 'react';
+import { Button, DropdownMenu, Heading, Table, toast, Toaster, Tooltip } from '@medusajs/ui';
+import { AdminProduct, AdminProductOption, AdminProductVariant, DetailWidgetProps } from '@medusajs/framework/types';
+import { EllipsisHorizontal, PencilSquare, ThumbnailBadge } from '@medusajs/icons';
+import VariantsImagesModal from '../VariantImages/VariantsImagesModal';
+import { defineWidgetConfig } from '@medusajs/admin-sdk';
+import ViewImagesModal from '../VariantImages/ViewImagesModal';
+import '../styles/globals.css';
+import WidgetSettingsModal from '../VariantImages/WidgetSettingsModal';
+// import { sdk } from '../lib/config';
+import { fetchBackend, paginationInformation } from '../VariantImages/utils/util';
+
+export type VariantImage = {
+  url: string | undefined;
+};
+
+type BaseOptionUpload = {
+  enabled?: boolean;
+  option?: string;
+};
+
+export type WidgetSettings = {
+  baseOptionUpload: BaseOptionUpload;
+};
+
+const VariantsImagesWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
+  const [openedVariant, setOpenedVariant] = useState<AdminProductVariant | null>(null);
+  const [openedDialogType, setOpenedDialogType] = useState<'media' | 'thumbnail' | null>(null);
+
+  const [settings, setSettings] = useState<WidgetSettings>({
+    baseOptionUpload: { enabled: false },
+  });
+  const [options, setOptions] = useState<AdminProductOption[]>();
+
+  const [product, setProduct] = useState<AdminProduct>(data);
+
+  useEffect(() => {
+    fetchBackend(`/admin/products/${product.id}/options`).then((res) => {
+      if (!res) return;
+
+      setOptions(res.product_options);
+    });
+
+    fetchBackend(`/admin/products/${product.id}/variants?order=title`).then((res) => {
+      if (!res) return;
+
+      setProduct((prevProd) => ({ ...prevProd, variants: res.variants }));
+    });
+
+    fetchBackend(`/admin/variant-images-settings/${product.id}`).then((res) => {
+      if (!res) return;
+
+      setSettings((_current) => ({
+        ..._current,
+        baseOptionUpload: {
+          enabled: res.base_option_enabled,
+          option: res.base_option_id || undefined,
+        },
+      }));
+    });
+  }, []);
+
+  const handleClose = (_product?: AdminProduct) => {
+    setOpenedVariant(null);
+    setOpenedDialogType(null);
+
+    if (_product) setProduct(_product);
+  };
+
+  const paginationOptions = paginationInformation(product.variants);
+  const { currentVariants } = paginationOptions;
+
+  return (
+    <>
+      <Toaster />
+      <div className='divide-y shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0'>
+        <div className='flex flex-row justify-between items-center px-6 py-4'>
+          <Heading level='h1' className='flex items-center justify-between gap-x-4 '>
+            <div>Variants Images</div>
+          </Heading>
+
+          <WidgetSettingsModal settings={settings} setSettings={setSettings} product={product} options={options} />
+        </div>
+
+        <div className='grid grid-cols-[repeat(auto-fill,minmax(225px,1fr))] gap-3 px-6 py-4'>
+          {currentVariants?.map((variant) => {
+            const variantImages: VariantImage[] | undefined = variant.metadata?.images as VariantImage[] | undefined;
+
+            const variantThumbnail: string | undefined = variant.metadata?.thumbnail as string | undefined;
+
+            return (
+              <div key={variant.id} className='w-full p-3 bg-[rgba(45,45,49,1)] rounded-md flex flex-col'>
+                <div className='flex items-center mb-3 bg-ui-bg-base rounded-full text-center relative py-[1.5px]'>
+                  <div className='inter-base-semibold flex-1'>{variant.title}</div>
+                  <DropdownMenu>
+                    <DropdownMenu.Trigger asChild>
+                      <Button variant='transparent' className='rounded-full absolute right-0 top-0'>
+                        <EllipsisHorizontal />
+                      </Button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content>
+                      <DropdownMenu.Item
+                        onClick={() => {
+                          setOpenedVariant(variant);
+                          setOpenedDialogType('thumbnail');
+                        }}
+                        className='gap-x-2'
+                      >
+                        <PencilSquare className='text-ui-fg-subtle' />
+                        Edit Thumbnail
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item
+                        onClick={() => {
+                          setOpenedVariant(variant);
+                          setOpenedDialogType('media');
+                        }}
+                        className='gap-x-2'
+                      >
+                        <PencilSquare className='text-ui-fg-subtle' />
+                        Edit Media
+                      </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                  </DropdownMenu>
+                </div>
+                <div className='grid grid-cols-2 grid-rows-2 items-center gap-3 h-full w-full'>
+                  {variantThumbnail ? (
+                    <div className='relative w-full h-full'>
+                      <img src={variantThumbnail} alt='Thumbnail' className='object-cover bg-clip-border w-full h-full rounded-md aspect-square' />
+
+                      <Tooltip content='Thumbnail'>
+                        <ThumbnailBadge className='absolute top-2 left-2' />
+                      </Tooltip>
+                    </div>
+                  ) : (
+                    <div className='w-full h-full aspect-square break-words text-ui-fg-muted text-[14px] text-center border rounded-md border-ui-border-strong border-dashed p-[15%] flex justify-center items-center'>
+                      No thumbnail
+                    </div>
+                  )}
+
+                  {variantImages?.length
+                    ? variantImages.length === 3
+                      ? variantImages.map(
+                          (
+                            image: {
+                              url: string | undefined;
+                            },
+                            i
+                          ) => <Image image={image} key={i} />
+                        )
+                      : variantImages.slice(0, 3).map(
+                          (
+                            image: {
+                              url: string | undefined;
+                            },
+                            i
+                          ) => (
+                            <div key={i} className='w-full h-full relative'>
+                              <Image image={image} />
+
+                              {i === 2 && <ViewImagesModal variantImages={variantImages} variantThumbnail={variantThumbnail} />}
+                            </div>
+                          )
+                        )
+                    : Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className='w-full h-full aspect-square break-words text-ui-fg-muted text-[14px] text-center border rounded-md border-ui-border-strong border-dashed p-[20%] flex justify-center items-center'
+                        >
+                          No images
+                        </div>
+                      ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div>
+          <Table.Pagination count={product.variants?.length || 0} {...paginationOptions} />
+        </div>
+      </div>
+
+      {openedDialogType && (
+        <VariantsImagesModal
+          product={product}
+          variant={openedVariant!}
+          open={!!openedVariant}
+          onClose={handleClose}
+          type={openedDialogType}
+          settings={settings}
+          notify={toast}
+        />
+      )}
+    </>
+  );
+};
+
+export const Image = ({ image }: { image: { url: string | undefined } }) => (
+  <img src={image.url} alt='Uploaded image' className='object-cover aspect-square w-full h-full bg-clip-border rounded-md' />
+);
+
+export const config = defineWidgetConfig({
+  zone: 'product.details.after',
+});
+
+export default VariantsImagesWidget;
