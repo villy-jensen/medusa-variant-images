@@ -73,7 +73,7 @@ const images: Images[] | undefined = variant.metadata?.images;
 
 - Medusa Variant Images includes the ability to order your images and displays the number when you click on the images.
 - You are also able to upload images by a **base option**.  
-  `For example: Let's say you have a clothing store.  You can select the base option as colour and upload your images to all variants with its colour option set as *brown*, simultaneously.`  
+  `For example: Let's say you have a clothing store. You can select the base option as colour and upload your images to all variants with its colour option set as *brown*, simultaneously.`  
   To do this, click the `3 dots` at the top right of the variant images section in your product.
 
 ## Bugs and Contributions

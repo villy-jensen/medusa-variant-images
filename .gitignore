@@ -26,3 +26,5 @@ build
 .medusa
 
 .npmignore
+
+.testing

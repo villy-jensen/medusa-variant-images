@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A variant images plugin for Medusa V2.",
   "author": "Betanoir",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Betanoir/medusa-variant-images"
+  },
   "license": "MIT",
   "files": [
     ".medusa/server"
