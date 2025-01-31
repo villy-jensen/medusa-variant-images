@@ -1,6 +1,8 @@
-# Medusa Variant Images
+<h1 align="center">Medusa Variant Images</h1>
 
-#### Adds the ability to give each product variant its own thumbnail and **ordered** images
+<p align="center"><strong>Adds the ability to give each product variant its own thumbnail and ordered images</strong></p>
+
+<br />
 
 ## Installation
 
@@ -72,12 +74,12 @@ const images: Images[] | undefined = variant.metadata?.images;
 ## More About The Plugin
 
 - Medusa Variant Images includes the ability to order your images and displays the number when you click on the images.
-- You are also able to upload images by a **base option**.  
-  `For example: Let's say you have a clothing store. You can select the base option as colour and upload your images to all variants with its colour option set as *brown*, simultaneously.`  
+- You can also upload images using a **base option**.  
+  For example: Let's say you have a clothing store. You can select the base option as colour and upload your images to all variants with its colour option set as *brown*, simultaneously.   
   To do this, click the `3 dots` at the top right of the variant images section in your product.
 
 ## Bugs and Contributions
 
 See a bug? Please raise an issue on the [GitHub repository](https://github.com/Betanoir/medusa-variant-images/issues).
 
-Want something to change? Feel free to clone the repository and and open a PR once you have added your feature, or please open a feature request on the [GitHub repository](https://github.com/Betanoir/medusa-variant-images/issues).
+Want something to change? Feel free to clone the repository and open a PR once you have added your feature, or please open a feature request on the [GitHub repository](https://github.com/Betanoir/medusa-variant-images/discussions/categories/feature-requests)
