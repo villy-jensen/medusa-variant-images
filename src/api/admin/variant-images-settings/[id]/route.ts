@@ -7,10 +7,7 @@ type UpdateVariantImagesSettingsRequest = {
   base_option_id?: string;
 };
 
-export const POST = async (
-  req: MedusaRequest<UpdateVariantImagesSettingsRequest>,
-  res: MedusaResponse
-) => {
+export const POST = async (req: MedusaRequest<UpdateVariantImagesSettingsRequest>, res: MedusaResponse) => {
   const product_id = req.params.id;
 
   const { result } = await updateVariantImagesSettingsWorkflow(req.scope).run({
@@ -18,22 +15,18 @@ export const POST = async (
     throwOnError: false,
     logOnError: true,
   });
-  console.log(result);
+
   res.json(result);
 };
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const product_id = req.params.id;
 
-  const { result } = await retrieveVariantImagesSettingsWorkflow(req.scope).run(
-    {
-      input: { product_id },
-      throwOnError: false,
-      logOnError: true,
-    }
-  );
-
-  console.log(result);
+  const { result } = await retrieveVariantImagesSettingsWorkflow(req.scope).run({
+    input: { product_id },
+    throwOnError: false,
+    logOnError: true,
+  });
 
   res.json(result);
 };

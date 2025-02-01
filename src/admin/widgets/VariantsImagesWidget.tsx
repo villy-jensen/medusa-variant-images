@@ -9,6 +9,7 @@ import '../styles/globals.css';
 import WidgetSettingsModal from '../VariantImages/WidgetSettingsModal';
 // import { sdk } from '../lib/config';
 import { fetchBackend, paginationInformation } from '../VariantImages/utils/util';
+import { omit } from 'lodash-es';
 
 export type VariantImage = {
   url: string | undefined;
@@ -176,7 +177,7 @@ const VariantsImagesWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
         </div>
 
         <div>
-          <Table.Pagination count={product.variants?.length || 0} {...paginationOptions} />
+          <Table.Pagination count={product.variants?.length || 0} {...omit(paginationOptions, 'currentVariants')} />
         </div>
       </div>
 
