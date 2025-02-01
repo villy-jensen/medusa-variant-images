@@ -1,7 +1,7 @@
 // import get from 'just-safe-get';
 import { FieldPath, FieldValues, UseFormReturn } from 'react-hook-form';
 import { Get } from 'type-fest';
-import get from 'lodash-es/get';
+import { get } from 'lodash-es';
 
 export type NestedForm<TValues extends FieldValues> = UseFormReturn<{
   __nested__: TValues;
