@@ -80,22 +80,17 @@ const VariantsImagesModal = ({ variant, open, onClose, product, type, settings, 
     let preppedImages: FormImage[] = [];
 
     try {
-      preppedImages = await prepareImages(data.media.images, fetchBackend);
+      preppedImages = await prepareImages(data.media.images);
     } catch (error) {
-      let errorMessage = 'Something went wrong while trying to upload images.';
-      const response = (error as any).response as Response;
+      console.log(error);
 
-      if (response.status === 500) {
-        errorMessage = `${errorMessage} You might not have a file service configured. Please contact your administrator.`;
-      }
-
-      notify.error('Error', { description: errorMessage });
-      console.error(errorMessage);
+      notify.error('Error', { description: 'Something went wrong while trying to upload images.' });
+      console.error('Something went wrong while trying to upload images.');
       return;
     }
 
     const urls = preppedImages.map((image) => ({ url: image.url }));
-    // await sdk.client.fetch(`/admin/products/${product.id}`, { body: { images: urls } });
+    await fetchBackend(`/admin/products/${product.id}`, { body: { images: urls }, method: 'POST' });
 
     let updatedVariantList: AdminProductVariant[] | undefined;
     if (type === 'thumbnail') {
@@ -115,15 +110,14 @@ const VariantsImagesModal = ({ variant, open, onClose, product, type, settings, 
         updatedVariantList = await fetchBackend(`/admin/products/${product.id}/variants?order=title`).then((res) => res?.variants);
       } else
         updatedVariantList = await fetchBackend(`/admin/products/${product.id}/variants/${variants.id}`, {
-            body: {
-              metadata: {
-                ...variants.metadata,
-                thumbnail,
-              },
+          body: {
+            metadata: {
+              ...variants.metadata,
+              thumbnail,
             },
-            method: 'POST',
-          })
-          .then((res) => res?.product?.variants?.sort?.(sortByTitle));
+          },
+          method: 'POST',
+        }).then((res) => res?.product?.variants?.sort?.(sortByTitle));
     } else {
       const images = data.media.images
         .map(({ info: { selected } }: { info: { selected: any } }, i: number) => selected && urls[i])
@@ -144,15 +138,14 @@ const VariantsImagesModal = ({ variant, open, onClose, product, type, settings, 
         updatedVariantList = await fetchBackend(`/admin/products/${product.id}/variants?order=title`).then((res) => res?.variants);
       } else {
         updatedVariantList = await fetchBackend(`/admin/products/${product.id}/variants/${variants.id}`, {
-            body: {
-              metadata: {
-                ...variants.metadata,
-                images,
-              },
+          body: {
+            metadata: {
+              ...variants.metadata,
+              images,
             },
-            method: 'POST',
-          })
-          .then((res) => res?.product?.variants?.sort?.(sortByTitle));
+          },
+          method: 'POST',
+        }).then((res) => res?.product?.variants?.sort?.(sortByTitle));
       }
     }
 
