@@ -48,18 +48,32 @@ export const paginationInformation = (variants: AdminProductVariant[] | null) =>
 type OptionArgs = Omit<RequestInit, 'headers' | 'body'> & {
   headers?: ClientHeaders;
   body?: RequestInit['body'] | Record<string, any>;
+  files?: boolean;
 };
 
 export const fetchBackend = async (url: string, options: OptionArgs = {}) => {
   const optionsObj: RequestInit = {
     credentials: 'include',
     method: options.method || 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+
+    // headers: {
+    //   'Content-Type': options.files ? 'multipart/form-data' : 'application/json',
+    // },
   };
 
-  if (options.body) optionsObj.body = JSON.stringify(options.body);
+  if (!options.files)
+    optionsObj.headers = {
+      'Content-Type': 'application/json',
+    };
+
+  // if (options.files) {
+  //   (optionsObj.headers as Record<string, string>)['enctype'] = 'multipart/form-data';
+  // }
+
+  if (options.body) {
+    if (options.files) optionsObj.body = options.body as BodyInit;
+    else optionsObj.body = JSON.stringify(options.body);
+  }
 
   const res = await fetch(url, optionsObj);
 
@@ -70,35 +84,32 @@ export const fetchBackend = async (url: string, options: OptionArgs = {}) => {
   return result;
 };
 
-// export const get = (obj: any[] | {}, propsArg: string | string[], defaultValue?: any) => {
-//   if (!obj) {
-//     return defaultValue;
+// const toBase64 = (file: File) =>
+//   new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(file);
+
+//     reader.onload = () => resolve(reader.result);
+//     reader.onerror = reject;
+//   });
+
+// export const sendFilesAsJson = async (files: File[]) => {
+//   const filesObj = [];
+
+//   for (const file of files) {
+//     const content = await toBase64(file).catch((err) => {
+//       console.error(err);
+//       return undefined;
+//     });
+
+//     if (content)
+//       filesObj.push({
+//         name: file.name,
+//         mimeType: file.type,
+//         content,
+//         access: 'public',
+//       });
 //   }
 
-//   let props, prop;
-//   if (Array.isArray(propsArg)) {
-//     props = propsArg.slice(0);
-//   }
-//   if (typeof propsArg == 'string') {
-//     props = propsArg.split('.');
-//   }
-//   if (typeof propsArg == 'symbol') {
-//     props = [propsArg];
-//   }
-//   if (!Array.isArray(props)) {
-//     throw new Error('props arg must be an array, a string or a symbol');
-//   }
-//   while (props.length) {
-//     prop = props.shift();
-//     if (!obj) {
-//       return defaultValue;
-//     }
-
-//     // @ts-ignore
-//     obj = obj[prop];
-//     if (obj === undefined) {
-//       return defaultValue;
-//     }
-//   }
-//   return obj;
+//   return filesObj;
 // };

@@ -1,3 +1,5 @@
+import { fetchBackend } from './util';
+
 export type FormImage = {
   url: string;
   name?: string;
@@ -20,18 +22,21 @@ const splitImages = (images: FormImage[]): { uploadImages: FormImage[]; existing
   return { uploadImages, existingImages };
 };
 
-export const prepareImages = async (images: FormImage[], fetch: any) => {
+export const prepareImages = async (images: FormImage[]) => {
   const { uploadImages, existingImages } = splitImages(images);
 
   let uploadedImgs: FormImage[] = [];
   if (uploadImages.length > 0) {
-    const files = uploadImages.map((i) => i.nativeFile);
-    const { files: uploaded } = await fetch('/admin/uploads', { body: { files } }).then((res: any) => {
-      if (!res) return { files: undefined };
-      return res;
+    const files = uploadImages.map((i) => i.nativeFile!);
+    const form = new FormData();
+
+    files.forEach((file) => {
+      form.append('files', file, file.name);
     });
 
-    uploadedImgs = uploaded;
+    const res = await fetchBackend('/admin/uploads', { body: form, method: 'POST', files: true }).catch((err: any) => console.log(err));
+    if (res) console.log(res);
+    if (res) uploadedImgs = res.files;
   }
 
   return [...existingImages, ...uploadedImgs];
