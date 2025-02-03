@@ -66,7 +66,7 @@ export default function WidgetSettingsModal({
           <EllipsisHorizontal />
         </Button>
       </Drawer.Trigger>
-      <Drawer.Content>
+      <Drawer.Content aria-describedby={undefined}>
         <Drawer.Header>
           <Drawer.Title>Variant Images Settings</Drawer.Title>
         </Drawer.Header>
@@ -76,11 +76,7 @@ export default function WidgetSettingsModal({
               <Heading level='h3'>Upload by option</Heading>
               {!!settings.baseOptionUpload.option && (
                 <>
-                  <Switch
-                    id='enable-option-setting'
-                    checked={enabled}
-                    onCheckedChange={handleCheckedChange}
-                  />
+                  <Switch id='enable-option-setting' checked={enabled} onCheckedChange={handleCheckedChange} />
                   <label htmlFor='enable-option-setting' className='sr-only'>
                     Enable/Disable base option
                   </label>
@@ -88,32 +84,18 @@ export default function WidgetSettingsModal({
               )}
             </div>
             <p className='text-sm text-ui-fg-muted'>
-              Instead of uploading images to each individual variant, upload to
-              multiple using a base option. Each variant with the same option
-              value will be updated.
+              Instead of uploading images to each individual variant, upload to multiple using a base option. Each variant with the same option value will be
+              updated.
             </p>
 
             <div>
               {!!settings.baseOptionUpload.option && (
-                <label
-                  htmlFor='option-select'
-                  className='text-xs text-neutral-300 block mt-2'
-                >
+                <label htmlFor='option-select' className='text-xs text-neutral-300 block mt-2'>
                   Select an option
                 </label>
               )}
-              <Select
-                size='small'
-                onValueChange={handleOptionChange}
-                value={option}
-              >
-                <Select.Trigger
-                  id='option-select'
-                  className={clx(
-                    'w-56 mt-2',
-                    !!settings.baseOptionUpload.option && 'mt-1'
-                  )}
-                >
+              <Select size='small' onValueChange={handleOptionChange} value={option}>
+                <Select.Trigger id='option-select' className={clx('w-56 mt-2', !!settings.baseOptionUpload.option && 'mt-1')}>
                   <Select.Value placeholder='Select Option' />
                 </Select.Trigger>
                 <Select.Content>
@@ -128,11 +110,8 @@ export default function WidgetSettingsModal({
 
             {option && (
               <p className='text-xs text-ui-fg-muted font-semibold'>
-                All variants with the same value for the{' '}
-                <span className='text-ui-fg-interactive'>
-                  {options?.find((o) => o.id === option)?.title}
-                </span>{' '}
-                option will be updated simultaneously
+                All variants with the same value for the <span className='text-ui-fg-interactive'>{options?.find((o) => o.id === option)?.title}</span> option
+                will be updated simultaneously
               </p>
             )}
           </div>

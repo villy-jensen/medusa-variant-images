@@ -9,7 +9,7 @@ export default function ViewImagesModal({ variantThumbnail, variantImages }: { v
           <p className='text-sm'>+{variantImages.length - 2} more</p>
         </button>
       </Drawer.Trigger>
-      <Drawer.Content>
+      <Drawer.Content aria-describedby={undefined}>
         <Drawer.Header>
           <Drawer.Title>View Variant Images</Drawer.Title>
         </Drawer.Header>

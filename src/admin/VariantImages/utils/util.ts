@@ -55,20 +55,12 @@ export const fetchBackend = async (url: string, options: OptionArgs = {}) => {
   const optionsObj: RequestInit = {
     credentials: 'include',
     method: options.method || 'GET',
-
-    // headers: {
-    //   'Content-Type': options.files ? 'multipart/form-data' : 'application/json',
-    // },
   };
 
   if (!options.files)
     optionsObj.headers = {
       'Content-Type': 'application/json',
     };
-
-  // if (options.files) {
-  //   (optionsObj.headers as Record<string, string>)['enctype'] = 'multipart/form-data';
-  // }
 
   if (options.body) {
     if (options.files) optionsObj.body = options.body as BodyInit;

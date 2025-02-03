@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Button, DropdownMenu, Heading, Table, toast, Toaster, Tooltip } from '@medusajs/ui';
+import { Button, clx, DropdownMenu, Heading, Table, toast, Toaster, Tooltip } from '@medusajs/ui';
 import { AdminProduct, AdminProductOption, AdminProductVariant, DetailWidgetProps } from '@medusajs/framework/types';
-import { EllipsisHorizontal, PencilSquare, ThumbnailBadge } from '@medusajs/icons';
+import { ArrowPath, EllipsisHorizontal, PencilSquare, ThumbnailBadge } from '@medusajs/icons';
 import VariantsImagesModal from '../VariantImages/VariantsImagesModal';
 import { defineWidgetConfig } from '@medusajs/admin-sdk';
 import ViewImagesModal from '../VariantImages/ViewImagesModal';
@@ -10,6 +10,7 @@ import WidgetSettingsModal from '../VariantImages/WidgetSettingsModal';
 // import { sdk } from '../lib/config';
 import { fetchBackend, paginationInformation } from '../VariantImages/utils/util';
 import { omit } from 'lodash-es';
+import { useTimer } from '../VariantImages/hooks/useTimer';
 
 export type VariantImage = {
   url: string | undefined;
@@ -24,6 +25,12 @@ export type WidgetSettings = {
   baseOptionUpload: BaseOptionUpload;
 };
 
+type UpdateData = {
+  variants?: boolean;
+  options?: boolean;
+  product?: boolean;
+};
+
 const VariantsImagesWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
   const [openedVariant, setOpenedVariant] = useState<AdminProductVariant | null>(null);
   const [openedDialogType, setOpenedDialogType] = useState<'media' | 'thumbnail' | null>(null);
@@ -32,21 +39,42 @@ const VariantsImagesWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
     baseOptionUpload: { enabled: false },
   });
   const [options, setOptions] = useState<AdminProductOption[]>();
-
   const [product, setProduct] = useState<AdminProduct>(data);
 
+  const updateData = async ({ variants = false, options = false, product: _product = false }: UpdateData) => {
+    if (variants) {
+      await fetchBackend(`/admin/products/${product.id}/variants?order=title`).then((res) => {
+        if (!res) return;
+
+        setProduct((prevProd) => ({ ...prevProd, variants: res.variants }));
+      });
+    }
+
+    if (options) {
+      await fetchBackend(`/admin/products/${product.id}/options`).then((res) => {
+        if (!res) return;
+
+        setOptions(res.product_options);
+      });
+    }
+
+    if (_product) {
+      await fetchBackend(`/admin/products/${product.id}?fields=-variants`).then((res) => {
+        if (!res) return;
+
+        setProduct((prevProd) => ({ ...prevProd, ...res.product }));
+      });
+    }
+  };
+
+  const { fetching, timeLeft, restart } = useTimer({
+    length: 6e4,
+    onComplete: async () => await updateData({ options: true, product: true, variants: true }),
+    recursive: true,
+  });
+
   useEffect(() => {
-    fetchBackend(`/admin/products/${product.id}/options`).then((res) => {
-      if (!res) return;
-
-      setOptions(res.product_options);
-    });
-
-    fetchBackend(`/admin/products/${product.id}/variants?order=title`).then((res) => {
-      if (!res) return;
-
-      setProduct((prevProd) => ({ ...prevProd, variants: res.variants }));
-    });
+    updateData({ options: true, variants: true });
 
     fetchBackend(`/admin/variant-images-settings/${product.id}`).then((res) => {
       if (!res) return;
@@ -80,7 +108,15 @@ const VariantsImagesWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
             <div>Variants Images</div>
           </Heading>
 
-          <WidgetSettingsModal settings={settings} setSettings={setSettings} product={product} options={options} />
+          <div className='flex flex-row gap-x-4'>
+            <Tooltip content='Refresh'>
+              <Button variant='transparent' onClick={() => restart()} className='h-7 p-1 flex flex-row gap-x-2 text-ui-fg-subtle'>
+                <ArrowPath className={clx(fetching && 'animate-spin')} /> <span className='text-xs w-4'>{timeLeft}</span>
+              </Button>
+            </Tooltip>
+
+            <WidgetSettingsModal settings={settings} setSettings={setSettings} product={product} options={options} />
+          </div>
         </div>
 
         <div className='grid grid-cols-[repeat(auto-fill,minmax(225px,1fr))] gap-3 px-6 py-4'>

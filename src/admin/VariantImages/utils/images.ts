@@ -35,7 +35,7 @@ export const prepareImages = async (images: FormImage[]) => {
     });
 
     const res = await fetchBackend('/admin/uploads', { body: form, method: 'POST', files: true }).catch((err: any) => console.log(err));
-    if (res) console.log(res);
+
     if (res) uploadedImgs = res.files;
   }
 
